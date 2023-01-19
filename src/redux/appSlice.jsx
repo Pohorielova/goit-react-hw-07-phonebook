@@ -21,6 +21,7 @@ const handleRejected = (state, action) => {
   state.contacts.error = action.payload;
 };
 export const changeFilterValue = createAction('phonebook/changeFilterValue');
+
 const appSlice = createSlice({
   name: 'phonebook',
   initialState: InitialState,
@@ -68,7 +69,6 @@ const appSlice = createSlice({
 //   appSlice.reducer
 // );
 
-export const { setFilter } = appSlice.actions;
 export const appReducer = appSlice.reducer;
 
 // Selectors
