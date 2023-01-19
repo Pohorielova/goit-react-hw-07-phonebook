@@ -62,7 +62,7 @@ export default function App() {
   const visibleContacts = items.filter(contact =>
     contact.name.toLowerCase().includes(filter.toLowerCase())
   );
-  console.log(visibleContacts);
+
   return (
     <Box as="div" p={15}>
       <Box as="h1" color="white" textAlign="center">
