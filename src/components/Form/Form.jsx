@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { PropTypes } from 'prop-types';
 import { Input, Label, Btn, Container } from './Form.styled';
+import { useDispatch } from 'react-redux';
+import { addContact } from './../../redux/operations';
 
 export default function Form({ onSubmitForm }) {
   const [data, setData] = useState({ name: '', number: '' });
-
+  const dispatch = useDispatch();
   const handelInputChange = e => {
     const { value, name } = e.currentTarget;
     setData(prev => {
@@ -18,8 +20,9 @@ export default function Form({ onSubmitForm }) {
   const handleSubmit = e => {
     e.preventDefault();
     const { name, number } = data;
-    onSubmitForm({ name, number });
+    dispatch(addContact({ name, number }));
     setData({ name: '', number: '' });
+    console.log('submit', data);
   };
 
   return (

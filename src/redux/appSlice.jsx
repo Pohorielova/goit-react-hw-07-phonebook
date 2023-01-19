@@ -1,46 +1,78 @@
-import { createSlice } from '@reduxjs/toolkit';
-// import { appReducer } from './appSlice';
-import { persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
+import { createAction, createSlice } from '@reduxjs/toolkit';
+
+// import { persistReducer } from 'redux-persist';
+// import storage from 'redux-persist/lib/storage';
+import { fetchContacts, addContact, deleteContact } from './operations';
 
 const InitialState = {
   contacts: {
     items: [],
-    filter: '',
+    isLoading: false,
+    error: null,
   },
+  filter: '',
+};
+const handlePending = state => {
+  state.contacts.isLoading = true;
 };
 
+const handleRejected = (state, action) => {
+  state.contacts.isLoading = false;
+  state.contacts.error = action.payload;
+};
+export const changeFilterValue = createAction('phonebook/changeFilterValue');
 const appSlice = createSlice({
   name: 'phonebook',
   initialState: InitialState,
-  reducers: {
-    add(state, action) {
+  extraReducers: {
+    [changeFilterValue](state, action) {
+      state.filter = action.payload;
+    },
+    [fetchContacts.pending]: handlePending,
+    [fetchContacts.fulfilled](state, action) {
+      state.contacts.isLoading = false;
+      state.contacts.error = null;
+      state.contacts.items = action.payload;
+    },
+    [fetchContacts.rejected]: handleRejected,
+    [addContact.pending]: handlePending,
+    [addContact.fulfilled](state, action) {
+      state.contacts.isLoading = false;
+      state.contacts.error = null;
       state.contacts.items.push(action.payload);
     },
-    remove(state, action) {
-      state.contacts.items = state.contacts.items.filter(
-        contact => contact.id !== action.payload
+    [addContact.rejected]: handleRejected,
+    [deleteContact.pending]: handlePending,
+    [deleteContact.fulfilled](state, action) {
+      state.contacts.isLoading = false;
+      state.contacts.error = null;
+      const index = state.contacts.items.findIndex(
+        task => task.id === action.payload.id
       );
+      state.contacts.items.splice(index, 1);
     },
-    setFilter(state, action) {
-      state.contacts.filter = action.payload;
+    [deleteContact.rejected](state, action) {
+      state.contacts.isLoading = false;
+      state.contacts.error = action.payload;
     },
   },
 });
 
-const persistConfig = {
-  key: 'phonebook',
-  storage,
-};
+// const persistConfig = {
+//   key: 'phonebook',
+//   storage,
+// };
 
-export const persistedAppReducer = persistReducer(
-  persistConfig,
-  appSlice.reducer
-);
+// export const persistedAppReducer = persistReducer(
+//   persistConfig,
+//   appSlice.reducer
+// );
 
-export const { add, remove, setFilter } = appSlice.actions;
-// export const appReducer = appSlice.reducer;
+export const { setFilter } = appSlice.actions;
+export const appReducer = appSlice.reducer;
 
 // Selectors
-export const getContacts = state => state.phonebook.contacts.items;
-export const getFilter = state => state.phonebook.contacts.filter;
+export const getItems = state => state.phonebook.contacts.items;
+export const getLoad = state => state.phonebook.contacts.isLoading;
+export const getError = state => state.phonebook.contacts.error;
+export const getFilter = state => state.phonebook.filter;

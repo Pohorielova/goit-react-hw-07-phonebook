@@ -1,30 +1,35 @@
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  add,
-  remove,
-  setFilter,
-  getContacts,
+  changeFilterValue,
+  getLoad,
+  getError,
   getFilter,
+  getItems,
 } from '../redux/appSlice';
 import { Box } from './Box';
 import shortid from 'shortid';
 import Form from './Form/Form';
 import ContactList from './ContactList/ContactList';
 import Filter from './Filter/Filter';
+import { useEffect } from 'react';
+
+import {
+  addContact,
+  fetchContacts,
+  deleteContact,
+} from './../redux/operations';
 
 export default function App() {
   const dispatch = useDispatch();
-  const contacts = useSelector(getContacts);
+  const items = useSelector(getItems);
+  const isLoading = useSelector(getLoad);
+  const error = useSelector(getError);
   const filter = useSelector(getFilter);
-  // const [contacts, setContacts] = useState(
-  //   JSON.parse(localStorage.getItem('contacts')) ?? []
-  // );
-  // const [filter, setFilter] = useState('');
 
-  // useEffect(() => {
-  //   localStorage.setItem('contacts', JSON.stringify(contacts));
-  // }, [contacts]);
-  // console.log(contacts);
+  useEffect(() => {
+    dispatch(fetchContacts());
+  }, [dispatch]);
+
   const addName = data => {
     const contact = {
       id: shortid.generate(),
@@ -34,13 +39,12 @@ export default function App() {
 
     const contactName = [];
 
-    contacts.forEach(contact => contactName.push(contact.name));
+    items.forEach(contact => items.push(contact.name));
 
     contactName.includes(contact.name)
       ? alert(`${contact.name} is already in contacts.`)
-      : // : setContacts(prevState => [contact, ...prevState]);
-        dispatch(
-          add({
+      : dispatch(
+          addContact({
             data,
             ...contact,
           })
@@ -48,27 +52,17 @@ export default function App() {
   };
 
   const changeFilter = e => {
-    // setFilter(e.currentTarget.value);
-    dispatch(setFilter(e.currentTarget.value));
+    dispatch(changeFilterValue(e.currentTarget.value));
   };
 
-  const deleteContact = contactId => {
-    // setContacts(prevState =>
-    //   prevState.filter(contact => contact.id !== contactId)
-    // );
-
-    dispatch(remove(contactId));
+  const removeContact = contactId => {
+    dispatch(deleteContact(contactId));
   };
 
-  const getVisibleContacts = () => {
-    const normalizedFilter = filter.toLowerCase();
-    return contacts.filter(contact =>
-      contact.name.toLowerCase().includes(normalizedFilter)
-    );
-  };
-
-  const visibleContacts = getVisibleContacts();
-
+  const visibleContacts = items.filter(contact =>
+    contact.name.toLowerCase().includes(filter.toLowerCase())
+  );
+  console.log(visibleContacts);
   return (
     <Box as="div" p={15}>
       <Box as="h1" color="white" textAlign="center">
@@ -79,9 +73,10 @@ export default function App() {
           <Form onSubmitForm={addName} contacts={visibleContacts} />
           <Filter value={filter} onChange={changeFilter} />
         </Box>
+        {isLoading && !error && <b>Request in progress...</b>}
         <ContactList
           contacts={visibleContacts}
-          onDeleteContact={deleteContact}
+          onDeleteContact={removeContact}
         />
       </Box>
     </Box>
