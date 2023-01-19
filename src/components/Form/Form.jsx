@@ -22,7 +22,6 @@ export default function Form({ onSubmitForm }) {
     const { name, number } = data;
     dispatch(addContact({ name, number }));
     setData({ name: '', number: '' });
-    console.log('submit', data);
   };
 
   return (
